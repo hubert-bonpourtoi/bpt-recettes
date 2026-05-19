@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bon pour toi — Publication de recettes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1D9E75;--green-light:#E1F5EE;--green-dark:#0F6E56;--green-deep:#085041;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#E24B4A;--red-light:#FCEBEB;--border:rgba(0,0,0,0.09);--border-med:rgba(0,0,0,0.15);--bg:#F5F4F0;--bg-white:#FFFFFF;--bg-section:#EEECEA;--text:#1A1A18;--text-secondary:#6B6B66;--text-hint:#A0A09A;--radius:10px;--radius-sm:6px;--shadow:0 1px 3px rgba(0,0,0,0.06)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5}
+.shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.sidebar{background:#18181A;padding:0;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-logo{padding:24px 22px 20px;border-bottom:0.5px solid rgba(255,255,255,0.08)}
+.sidebar-logo .brand{font-size:18px;font-weight:600;color:white;letter-spacing:-0.03em}
+.sidebar-logo .brand span{color:var(--green)}
+.sidebar-logo .sub{font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.1em}
+.nav-section{padding:16px 0 8px}
+.nav-section-label{font-size:10px;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:0.1em;font-family:'DM Mono',monospace;padding:0 22px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 22px;font-size:13px;color:rgba(255,255,255,0.45);cursor:pointer;border-left:2px solid transparent;transition:all 0.15s}
+.nav-item:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04)}
+.nav-item.active{color:white;border-left-color:var(--green);background:rgba(255,255,255,0.06);font-weight:500}
+.nav-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.2);flex-shrink:0;transition:background 0.15s}
+.nav-item.active .nav-dot{background:var(--green)}
+.sidebar-footer{margin-top:auto;padding:16px 22px;border-top:0.5px solid rgba(255,255,255,0.08)}
+.conn-status{font-size:11px;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace}
+.conn-status.ok{color:#5DCAA5}
+.conn-status.ok::before{content:'● '}
+.conn-status.nok::before{content:'○ '}
+.settings-toggle{font-size:12px;color:rgba(255,255,255,0.35);cursor:pointer;margin-top:6px;display:block;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0;text-align:left;transition:color 0.12s}
+.settings-toggle:hover{color:rgba(255,255,255,0.65)}
+.main{padding:36px 44px 100px;max-width:920px}
+.page-header{margin-bottom:28px}
+.page-header-label{font-size:10px;font-weight:500;color:var(--text-hint);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
+.title-input{font-size:26px;font-weight:600;color:var(--text);border:none;background:transparent;width:100%;letter-spacing:-0.025em;outline:none;border-bottom:2px solid transparent;padding-bottom:4px;transition:border-color 0.15s;font-family:'DM Sans',sans-serif}
+.title-input:focus{border-bottom-color:var(--green)}
+.title-input::placeholder{color:var(--text-hint)}
+.settings-panel{background:#18181A;border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;display:none}
+.settings-panel.open{display:block}
+.settings-panel h3{font-size:11px;font-weight:500;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;font-family:'DM Mono',monospace;margin-bottom:14px}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.settings-panel .fg label{color:rgba(255,255,255,0.35);font-size:11px;text-transform:uppercase;letter-spacing:0.05em}
+.settings-panel .fg input{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);color:white;border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;width:100%;font-family:'DM Mono',monospace;outline:none;transition:border-color 0.12s}
+.settings-panel .fg input:focus{border-color:var(--green)}
+.settings-note{font-size:11px;color:rgba(255,255,255,0.2);margin-top:6px}
+.status-bar{border-radius:var(--radius-sm);padding:11px 16px;font-size:13px;margin-bottom:20px;display:none;line-height:1.4}
+.status-bar.success{display:block;background:var(--green-light);color:var(--green-deep);cursor:pointer}
+.status-bar.error{display:block;background:var(--red-light);color:#7A1F1F}
+.status-bar.loading{display:block;background:var(--bg-section);color:var(--text-secondary)}
+.status-bar.warning{display:block;background:var(--amber-light);color:#92400E}
+.generate-panel{background:var(--bg-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:24px;margin-bottom:24px;box-shadow:var(--shadow)}
+.generate-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.generate-panel-title{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.badge-ai{font-size:10px;padding:3px 8px;border-radius:20px;background:var(--green-light);color:var(--green-dark);font-family:'DM Mono',monospace;font-weight:500;letter-spacing:0.05em;border:0.5px solid rgba(29,158,117,0.3)}
+.generate-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.generate-actions{display:flex;align-items:center;gap:12px}
+.btn-generate{font-size:14px;font-weight:600;padding:11px 24px;border-radius:var(--radius-sm);background:var(--green);color:white;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.12s,transform 0.1s;display:flex;align-items:center;gap:8px;letter-spacing:-0.01em}
+.btn-generate:hover{background:var(--green-dark)}
+.btn-generate:active{transform:scale(0.98)}
+.btn-generate:disabled{opacity:0.45;cursor:not-allowed}
+.generate-hint{font-size:12px;color:var(--text-hint)}
+.section{display:none}
+.section.active{display:block}
+.section-header{font-size:10px;font-weight:500;color:var(--text-hint);text-transform:uppercase;letter-spacing:0.1em;font-family:'DM Mono',monospace;margin-bottom:20px;padding-bottom:10px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.generated-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--green-light);color:var(--green-dark);border:0.5px solid rgba(29,158,117,0.2)}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;color:var(--text-secondary);font-weight:500;text-transform:uppercase;letter-spacing:0.04em}
+.fg input,.fg select,.fg textarea{background:var(--bg-white);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;width:100%;transition:border-color 0.12s,box-shadow 0.12s;box-shadow:var(--shadow)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,0.08)}
+.fg textarea{resize:vertical;min-height:80px;line-height:1.6}
+.fg select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B6B66' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.fg input.generated,.fg textarea.generated,.fg select.generated{border-color:rgba(29,158,117,0.4);background:#FAFFFE}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.grid-6{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.mb-16{margin-bottom:16px}
+.mb-24{margin-bottom:24px}
+.rep-block{background:var(--bg-white);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow)}
+.rep-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg-section);border-bottom:0.5px solid var(--border)}
+.rep-head-title{font-size:12px;font-weight:500;color:var(--text-secondary);display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--green-light);color:var(--green-dark);font-family:'DM Mono',monospace}
+.rep-body{padding:14px 16px}
+.item-group{border:0.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden}
+.item-group-head{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-section)}
+.item-group-head input{flex:1;font-size:13px;font-weight:500;background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif}
+.item-group-head input::placeholder{color:var(--text-hint)}
+.item-group-body{padding:10px 12px}
+.item-row{background:var(--bg-section);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;position:relative}
+.item-row-inner{margin-right:28px}
+.item-num{font-size:10px;font-family:'DM Mono',monospace;color:var(--text-hint);margin-bottom:8px}
+.btn-add-main{font-size:12px;color:var(--green);background:var(--green-light);border:none;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:background 0.12s}
+.btn-add-main:hover{background:#C8EFE3}
+.btn-add-sub{font-size:12px;color:var(--text-secondary);background:none;border:0.5px dashed var(--border-med);padding:5px 10px;border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;transition:all 0.12s}
+.btn-add-sub:hover{border-color:var(--green);color:var(--green)}
+.btn-remove{position:absolute;top:8px;right:8px;font-size:16px;color:var(--text-hint);background:none;border:none;cursor:pointer;line-height:1;padding:2px 4px;border-radius:4px;transition:all 0.12s}
+.btn-remove:hover{color:var(--red);background:var(--red-light)}
+.btn-remove-inline{font-size:16px;color:var(--text-hint);background:none;border:none;cursor:pointer;flex-shrink:0;padding:2px 4px;border-radius:4px;transition:all 0.12s}
+.btn-remove-inline:hover{color:var(--red);background:var(--red-light)}
+.rankmath-box{background:var(--amber-light);border:0.5px solid rgba(245,158,11,0.3);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px}
+.rankmath-box h4{font-size:12px;font-weight:600;color:#92400E;margin-bottom:12px}
+.rankmath-box .rm-field{margin-bottom:14px}
+.rankmath-box .rm-field label{font-size:11px;color:#78350F;text-transform:uppercase;letter-spacing:0.04em;font-weight:500;display:block;margin-bottom:4px}
+.rankmath-box .rm-value{font-size:13px;color:#451A03;background:rgba(255,255,255,0.65);border-radius:var(--radius-sm);padding:9px 12px;line-height:1.5;border:0.5px solid rgba(245,158,11,0.2);min-height:38px}
+.rankmath-box .rm-value:empty::before{content:'En attente de génération...';color:rgba(245,158,11,0.45);font-style:italic}
+.copy-btn{font-size:11px;color:#92400E;background:rgba(255,255,255,0.5);border:0.5px solid rgba(245,158,11,0.3);padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:5px;transition:background 0.12s}
+.copy-btn:hover{background:rgba(255,255,255,0.85)}
+.nutri-row{display:grid;grid-template-columns:180px 1fr 80px;gap:8px;margin-bottom:8px;align-items:end}
+.nutri-label{font-size:13px;color:var(--text);padding-bottom:10px;font-weight:500}
+.check-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.check-row input[type="checkbox"]{width:15px;height:15px;accent-color:var(--green);cursor:pointer}
+.check-row label{font-size:13px;color:var(--text-secondary);cursor:pointer}
+.pub-wrap{position:relative}
+.pub-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg-white);border:0.5px solid var(--border-med);border-radius:var(--radius-sm);z-index:200;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.pub-dropdown.open{display:block}
+.pub-opt{padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pub-opt:last-child{border-bottom:none}
+.pub-opt:hover{background:var(--bg-section)}
+.pub-opt-id{font-size:11px;color:var(--text-hint);font-family:'DM Mono',monospace}
+.pub-searching{padding:10px 12px;font-size:13px;color:var(--text-hint)}
+.pub-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pub-tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 8px 3px 10px;background:var(--green-light);color:var(--green-deep);border-radius:20px;font-weight:500}
+.pub-tag button{background:none;border:none;cursor:pointer;color:var(--green-dark);font-size:14px;line-height:1;padding:0}
+.subsection-title{font-size:12px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;font-family:'DM Mono',monospace;margin:20px 0 12px;padding-top:16px;border-top:0.5px solid var(--border)}
+.note{font-size:12px;color:var(--text-hint);margin-bottom:12px;line-height:1.5}
+.footer-bar{position:fixed;bottom:0;left:230px;right:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);border-top:0.5px solid var(--border);padding:13px 44px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+.footer-info{font-size:12px;color:var(--text-hint);font-family:'DM Mono',monospace}
+.footer-btns{display:flex;gap:10px}
+.btn-pub{font-size:14px;font-weight:600;padding:10px 24px;border-radius:var(--radius-sm);background:var(--green);color:white;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.12s,transform 0.1s;letter-spacing:-0.01em}
+.btn-pub:hover{background:var(--green-dark)}
+.btn-pub:active{transform:scale(0.98)}
+.btn-pub:disabled{opacity:0.45;cursor:not-allowed}
+.btn-reset{font-size:14px;padding:10px 18px;border-radius:var(--radius-sm);background:none;color:var(--text-secondary);border:0.5px solid var(--border-med);cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.12s}
+.btn-reset:hover{background:var(--bg-section)}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(24,24,26,0.75);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:16px;backdrop-filter:blur(4px)}
+.loading-overlay.active{display:flex}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:white;font-weight:500}
+.loading-sub{font-size:12px;color:rgba(255,255,255,0.45);font-family:'DM Mono',monospace}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:10px}
+
+.icon-picker-btn{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green);background:var(--green-light);border:none;padding:5px 10px;border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;margin-top:6px;transition:background 0.12s}
+.icon-picker-btn:hover{background:#C8EFE3}
+.icon-picker-btn img{width:18px;height:18px;object-fit:contain}
+.icon-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+.icon-modal.open{display:flex}
+.icon-modal-box{background:white;border-radius:var(--radius);width:640px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
+.icon-modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:0.5px solid var(--border)}
+.icon-modal-head h3{font-size:14px;font-weight:600;color:var(--text)}
+.icon-modal-search{padding:12px 20px;border-bottom:0.5px solid var(--border)}
+.icon-modal-search input{width:100%;padding:8px 12px;border:0.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;outline:none}
+.icon-modal-search input:focus{border-color:var(--green)}
+.icon-modal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:16px 20px;overflow-y:auto;flex:1}
+.icon-modal-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px;border-radius:var(--radius-sm);cursor:pointer;border:0.5px solid var(--border);transition:all 0.12s}
+.icon-modal-item:hover{border-color:var(--green);background:var(--green-light)}
+.icon-modal-item img{width:40px;height:40px;object-fit:contain}
+.icon-modal-item span{font-size:9px;color:var(--text-hint);text-align:center;line-height:1.2;word-break:break-all;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon-modal-loading{padding:40px;text-align:center;color:var(--text-hint);font-size:13px}
+.icon-modal-footer{padding:12px 20px;border-top:0.5px solid var(--border);display:flex;justify-content:flex-end}
+.btn-close-modal{font-size:13px;padding:8px 16px;border-radius:var(--radius-sm);background:none;color:var(--text-secondary);border:0.5px solid var(--border-med);cursor:pointer;font-family:'DM Sans',sans-serif}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">bon<span>pour</span>toi</div>
+      <div class="sub">Publication recettes</div>
+    </div>
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-label">Génération</div>
+        <div class="nav-item active" onclick="switchTab('generer')"><div class="nav-dot"></div>Générer avec Claude</div>
+        <div class="nav-item" onclick="switchTab('seo')"><div class="nav-dot" id="dot-seo"></div>SEO — Rank Math</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Champs recette</div>
+        <div class="nav-item" onclick="switchTab('recette')"><div class="nav-dot" id="dot-recette"></div>Recette</div>
+        <div class="nav-item" onclick="switchTab('pourquoi')"><div class="nav-dot" id="dot-pourquoi"></div>Pourquoi ça fonctionne</div>
+        <div class="nav-item" onclick="switchTab('nutrition')"><div class="nav-dot" id="dot-nutrition"></div>Infos nutritives</div>
+        <div class="nav-item" onclick="switchTab('boutique')"><div class="nav-dot"></div>Boutique essentiels</div>
+        <div class="nav-item" onclick="switchTab('faq')"><div class="nav-dot" id="dot-faq"></div>FAQ</div>
+        <div class="nav-item" onclick="switchTab('liens')"><div class="nav-dot"></div>Liens &amp; suggestions</div>
+        <div class="nav-item" onclick="switchTab('mots-cles')"><div class="nav-dot" id="dot-mots-cles"></div>Mots clés</div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="conn-status nok" id="conn-status">Non connecté</div>
+      <button class="settings-toggle" onclick="toggleSettings()">Paramètres de connexion</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <div class="page-header-label">Nouvelle recette</div>
+      <input type="text" class="title-input" id="post-title" placeholder="Titre provisoire de la recette...">
+    </div>
+    <div class="settings-panel" id="settings-panel">
+      <h3>Connexion WordPress</h3>
+      <div class="settings-grid">
+        <div class="fg"><label>Nom d'utilisateur</label><input type="text" id="wp-user" placeholder="hubert" oninput="updateConnStatus()"></div>
+        <div class="fg"><label>Mot de passe d'application</label><input type="password" id="wp-pass" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx" oninput="updateConnStatus()"></div>
+      </div>
+      <p class="settings-note">Identifiants sauvegardés localement dans votre navigateur.</p>
+    </div>
+    <div class="status-bar" id="status-bar"></div>
+
+    <!-- GÉNÉRER -->
+    <div class="section active" id="tab-generer">
+      <div class="generate-panel">
+        <div class="generate-panel-header">
+          <div class="generate-panel-title">Saisie rapide <span class="badge-ai">IA</span></div>
+        </div>
+        <div class="generate-grid">
+          <div class="fg"><label>Ingrédients (texte libre)</label><textarea id="raw-ingredients" style="min-height:200px" placeholder="Vinaigrette :&#10;- ¼ tasse d'huile d'olive&#10;- 3 c. à soupe de miel&#10;&#10;Salade :&#10;- 4 tasses de chou rouge, émincé&#10;- 1 ¼ tasse de carottes, en fines juliennes&#10;..."></textarea></div>
+          <div class="fg"><label>Étapes de préparation (texte libre)</label><textarea id="raw-steps" style="min-height:200px" placeholder="1. Dans un bol, fouetter l'huile d'olive, le miel...&#10;&#10;2. Dans un petit bol, couvrir les canneberges d'eau chaude...&#10;&#10;3. Assembler la salade..."></textarea></div>
+        </div>
+        <div class="grid-2" style="margin-bottom:16px">
+          <div class="fg"><label>Nombre de portions</label><input type="text" id="gen-portions" placeholder="4 portions"></div>
+          <div class="fg"><label>Notes supplémentaires (optionnel)</label><input type="text" id="gen-notes" placeholder="Ex. : recette végane, sans gluten, occasion spéciale..."></div>
+        </div>
+        <div class="generate-actions">
+          <button class="btn-generate" id="gen-btn" onclick="generateWithClaude()">✦ Générer avec Claude</button>
+          <span class="generate-hint">Tous les champs seront remplis automatiquement</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEO -->
+    <div class="section" id="tab-seo">
+      <div class="section-header">SEO — Rank Math <span class="generated-badge" id="seo-badge" style="display:none">Généré</span></div>
+      <p class="note" style="margin-bottom:16px">Copier-coller ces suggestions manuellement dans Rank Math après publication du brouillon WordPress.</p>
+      <div class="rankmath-box">
+        <h4>✦ Suggestions SEO générées par Claude</h4>
+        <div class="rm-field"><label>H1 suggéré (titre de la page)</label><div class="rm-value" id="seo-h1"></div><button class="copy-btn" onclick="copyRm('seo-h1')">Copier</button></div>
+        <div class="rm-field"><label>Slug suggéré</label><div class="rm-value" id="seo-slug"></div><button class="copy-btn" onclick="copyRm('seo-slug')">Copier</button></div>
+        <div class="rm-field"><label>Title tag</label><div class="rm-value" id="seo-title"></div><button class="copy-btn" onclick="copyRm('seo-title')">Copier</button></div>
+        <div class="rm-field"><label>Méta-description</label><div class="rm-value" id="seo-meta"></div><button class="copy-btn" onclick="copyRm('seo-meta')">Copier</button></div>
+        <div class="rm-field"><label>Mot-clé principal (long tail)</label><div class="rm-value" id="seo-kw"></div><button class="copy-btn" onclick="copyRm('seo-kw')">Copier</button></div>
+        <div class="rm-field"><label>Alt text photo</label><div class="rm-value" id="seo-alt"></div><button class="copy-btn" onclick="copyRm('seo-alt')">Copier</button></div>
+      </div>
+    </div>
+
+    <!-- RECETTE -->
+    <div class="section" id="tab-recette">
+      <div class="section-header">Recette <span class="generated-badge" id="recette-badge" style="display:none">Généré</span></div>
+      <div class="grid-2"><div class="fg"><label>Nombre de portions</label><input type="text" id="nombre_de_portions"></div><div class="fg"><label>Durée totale (minutes)</label><input type="number" id="temp_total_minutes"></div></div>
+      <div class="grid-3"><div class="fg"><label>Temps de préparation</label><input type="text" id="temps_de_preparation"></div><div class="fg"><label>Temps de cuisson</label><input type="text" id="temps_de_cuisson"></div><div class="fg"><label>Niveau de difficulté</label><select id="niveau_de_difficulte"><option value="">— choisir —</option><option>Facile</option><option>Intermédiaire</option><option>Difficile</option></select></div></div>
+      <div class="grid-4"><div class="fg"><label>Réfrigération</label><input type="text" id="temps_de_refrigeration"></div><div class="fg"><label>Congélation</label><input type="text" id="temps_de_congelation"></div><div class="fg"><label>Prép. schema</label><input type="text" id="temps_de_preparation_schema" placeholder="PT25M"></div><div class="fg"><label>Cuisson schema</label><input type="text" id="temps_de_cuisson_schema" placeholder="PT0M"></div></div>
+      <div class="grid-2 mb-24"><div class="fg"><label>Total schema</label><input type="text" id="temps_de_la_recette_pour_le_schema" placeholder="PT25M"></div><div class="fg"><label>Titre section ingrédients</label><input type="text" id="ingredient_titre_de_section"></div></div>
+      <div class="fg mb-24"><label>Introduction (contenu principal WordPress)</label><textarea id="wp-content" style="min-height:220px"></textarea></div>
+      <div class="rep-block"><div class="rep-head"><div class="rep-head-title">Ingrédients <span class="badge">2 niveaux</span></div><button class="btn-add-main" onclick="addGroupeIngredients()">+ Groupe</button></div><div class="rep-body" id="ingredients-root"></div></div>
+      <div class="rep-block"><div class="rep-head"><div class="rep-head-title">Étapes de préparation <span class="badge">2 niveaux</span></div><button class="btn-add-main" onclick="addGroupeEtapes()">+ Groupe</button></div><div class="rep-body" id="etapes-root"></div></div>
+      <div class="rep-block"><div class="rep-head"><div class="rep-head-title">Alternatives</div><button class="btn-add-main" onclick="addAlternative()">+ Ajouter</button></div><div class="rep-body" id="alternatives-root"></div></div>
+      <div class="fg mb-16"><label>Titre "Bon dans la bouche"</label><textarea id="titre_section_recettes_de_meme_aliment" style="min-height:60px"></textarea></div>
+      <div class="grid-2"><div class="fg"><label>Conseil d'Hubert — titre</label><input type="text" id="le_conseil_d_hubert_titre"></div></div>
+      <div class="fg mb-24"><label>Conseil d'Hubert — texte</label><textarea id="le_conseil_dhubert" style="min-height:100px"></textarea></div>
+      <div class="fg mb-16"><label>Témoignage — texte</label><textarea id="recette_temoignage_texte" style="min-height:80px"></textarea></div>
+      <div class="fg mb-16"><label>Témoignage — auteur</label><input type="text" id="recette_temoignage_auteur"></div>
+    </div>
+
+    <!-- POURQUOI -->
+    <div class="section" id="tab-pourquoi">
+      <div class="section-header">Pourquoi ça fonctionne <span class="generated-badge" id="pourquoi-badge" style="display:none">Généré</span></div>
+      <div class="fg mb-16"><label>Titre du texte</label><input type="text" id="recette_fonctionne_titre_texte"></div>
+      <div class="fg mb-24"><label>Contenu texte</label><textarea id="recette_fonctionne_texte" style="min-height:220px"></textarea></div>
+      <div class="fg mb-16"><label>Titre accompagnements</label><input type="text" id="recette_fonctionne_titre_accompagnements"></div>
+      <div class="rep-block"><div class="rep-head"><div class="rep-head-title">Accompagnements <span class="badge">ingredient · icone</span></div><button class="btn-add-main" onclick="addAccompagnement()">+ Ajouter</button></div><div class="rep-body" id="accompagnements-root"></div></div>
+    </div>
+
+    <!-- NUTRITION -->
+    <div class="section" id="tab-nutrition">
+      <div class="section-header">Informations nutritives <span class="generated-badge" id="nutrition-badge" style="display:none">Généré</span></div>
+      <div class="grid-2"><div class="fg"><label>Portion (affichage)</label><input type="text" id="portion_valeur_nutritive"></div><div class="fg"><label>Calories (kcal)</label><input type="text" id="calories"></div></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:6px"><div style="font-size:12px;color:var(--text-secondary)">Nutriment</div><div style="font-size:12px;color:var(--text-secondary)">Quantité</div><div style="font-size:12px;color:var(--text-secondary)">% VQ</div></div>
+      <div id="nutri-rows"></div>
+      <div class="subsection-title">Valeurs Swiitch</div>
+      <div class="grid-3"><div class="fg"><label>FGE</label><input type="text" id="fge" placeholder="-"></div><div class="fg"><label>Fruits</label><input type="text" id="fruits" placeholder="-"></div><div class="fg"><label>Légumes</label><input type="text" id="legumes" placeholder="-"></div></div>
+      <div class="grid-3"><div class="fg"><label>PLAV</label><input type="text" id="plav" placeholder="-"></div><div class="fg"><label>Plaisir</label><input type="text" id="plaisir" placeholder="-"></div><div class="fg"><label>Gras</label><input type="text" id="gras" placeholder="-"></div></div>
+      <div class="grid-3"><div class="fg"><label>Protéines (sw)</label><input type="text" id="sw_proteines" placeholder="-"></div><div class="fg"><label>Portion (sw)</label><input type="text" id="vn_portion"></div></div>
+    </div>
+
+    <!-- BOUTIQUE -->
+    <div class="section" id="tab-boutique">
+      <div class="section-header">Boutique nos essentiels</div>
+      <div class="grid-2"><div class="fg"><label>Afficher la section</label><select id="afficher_la_section_essentiel_recette"><option value="1">Oui</option><option value="0">Non</option></select></div><div class="fg"><label>Texte étiquette</label><input type="text" id="texte_etiquette_essentiel_recette"></div></div>
+      <div class="rep-block"><div class="rep-head"><div class="rep-head-title">Produits</div><button class="btn-add-main" onclick="addProduit()">+ Ajouter</button></div><div class="rep-body" id="produits-root"></div></div>
+      <div class="fg mb-16"><label>Texte bas de section</label><input type="text" id="texte_essentiel_recette"></div>
+      <div class="fg mb-16"><label>Bouton Amazon — texte</label><input type="text" id="bouton_amazon_texte"></div>
+      <div class="fg mb-24"><label>Bouton Amazon — URL</label><input type="text" id="bouton_amazon_essentiel_recette"></div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section" id="tab-faq">
+      <div class="section-header">FAQ <span class="generated-badge" id="faq-badge" style="display:none">Généré</span></div>
+      <div class="fg mb-16"><label>Titre de la section</label><input type="text" id="titre_section_faq" placeholder="Questions fréquentes :"></div>
+      <div class="rep-block"><div class="rep-head"><div class="rep-head-title">Accordéons</div><button class="btn-add-main" onclick="addFaq()">+ Ajouter</button></div><div class="rep-body" id="faq-root"></div></div>
+    </div>
+
+    <!-- LIENS -->
+    <div class="section" id="tab-liens">
+      <div class="section-header">Liens &amp; suggestions</div>
+      <p class="note">Tapez quelques lettres pour rechercher dans WordPress. Les identifiants de connexion sont requis.</p>
+      <div class="subsection-title" style="margin-top:0;border-top:none;padding-top:0">Recettes de même aliment <span class="badge">recettes_de_meme_aliment → recette</span></div>
+      <div id="sel-meme-aliment"></div><button class="btn-add-sub" onclick="addPubSel('sel-meme-aliment','recettes','recette')">+ Ajouter une recette</button>
+      <div class="subsection-title">Autres recettes (bas de page) <span class="badge">recettes → recette</span></div>
+      <div id="sel-autres-recettes"></div><button class="btn-add-sub" onclick="addPubSel('sel-autres-recettes','recettes','recette')">+ Ajouter une recette</button>
+      <div class="subsection-title">Articles reliés <span class="badge">articles_relies → article</span></div>
+      <div id="sel-articles-relies"></div><button class="btn-add-sub" onclick="addPubSel('sel-articles-relies','posts','article')">+ Ajouter un article</button>
+      <div class="subsection-title">Suggestions vedettes <span class="badge">suggestions_de_recettes → recette_vedette</span></div>
+      <div id="sel-suggestions"></div><button class="btn-add-sub" onclick="addPubSel('sel-suggestions','recettes','recette_vedette')">+ Ajouter une recette</button>
+    </div>
+
+    <!-- MOTS CLÉS -->
+    <div class="section" id="tab-mots-cles">
+      <div class="section-header">Mots clés <span class="generated-badge" id="motscles-badge" style="display:none">Généré</span></div>
+      <p class="note">Mots clés SEO séparés par des virgules, classés par pertinence.</p>
+      <div class="fg"><label>Mots clés</label><textarea id="keywords" style="min-height:120px"></textarea></div>
+    </div>
+  </main>
+</div>
+
+
+<div class="icon-modal" id="icon-modal">
+  <div class="icon-modal-box">
+    <div class="icon-modal-head">
+      <h3>Choisir une icône</h3>
+      <button class="btn-close-modal" onclick="closeIconModal()">Fermer</button>
+    </div>
+    <div class="icon-modal-search">
+      <input type="text" id="icon-search" placeholder="Filtrer par nom..." oninput="filterIcons()">
+    </div>
+    <div class="icon-modal-grid" id="icon-grid">
+      <div class="icon-modal-loading">Entrez vos identifiants WordPress et cliquez sur "Choisir une icône" pour charger les SVG.</div>
+    </div>
+    <div class="icon-modal-footer">
+      <button class="btn-close-modal" onclick="closeIconModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer-bar">
+  <div class="footer-info" id="footer-info">Prêt à publier</div>
+  <div class="footer-btns">
+    <button class="btn-reset" onclick="clearForm()">Réinitialiser</button>
+    <button class="btn-pub" id="pub-btn" onclick="publishToWP()">Publier dans WordPress →</button>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Génération en cours...</div>
+  <div class="loading-sub" id="loading-sub">Claude analyse la recette</div>
+</div>
+
+<script>
+const WP='https://bonpourtoi.ca';
+window.addEventListener('load',()=>{
+  const u=localStorage.getItem('bpt_wp_user'),p=localStorage.getItem('bpt_wp_pass');
+  if(u)document.getElementById('wp-user').value=u;
+  if(p)document.getElementById('wp-pass').value=p;
+  updateConnStatus();buildNutri();addGroupeIngredients();addGroupeEtapes();addProduit();
+  // Pré-remplir boutique
+  const fields = {
+    'texte_etiquette_essentiel_recette': 'Nos essentiels pour cette recette',
+    'texte_essentiel_recette': 'Pour d’autres équipements, petits électros ou ingrédients :',
+    'bouton_amazon_texte': 'DÉCOUVRE NOTRE BOUTIQUE AMAZON',
+    'bouton_amazon_essentiel_recette': 'https://www.amazon.ca/shop/hubertcormier'
+  };
+  Object.entries(fields).forEach(([id,val])=>{const el=document.getElementById(id);if(el&&!el.value)el.value=val;});
+});
+function v(id){return(document.getElementById(id)||{value:''}).value.trim()}
+function setV(id,val){const el=document.getElementById(id);if(el&&val!==undefined&&val!==null){el.value=val||'';if(val)el.classList.add('generated')}}
+function toggleSettings(){document.getElementById('settings-panel').classList.toggle('open')}
+function updateConnStatus(){
+  const u=v('wp-user'),p=v('wp-pass');
+  if(u)localStorage.setItem('bpt_wp_user',u);
+  if(p)localStorage.setItem('bpt_wp_pass',p);
+  const el=document.getElementById('conn-status');
+  if(u&&p){el.textContent='Connecté : '+u;el.className='conn-status ok'}
+  else{el.textContent='Non connecté';el.className='conn-status nok'}
+}
+function switchTab(tab){
+  const tabs=['generer','seo','recette','pourquoi','nutrition','boutique','faq','liens','mots-cles'];
+  document.querySelectorAll('.nav-item').forEach((el,i)=>el.classList.toggle('active',tabs[i]===tab));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+function showStatus(msg,type,url){
+  const el=document.getElementById('status-bar');
+  el.textContent=msg;el.className='status-bar '+type;
+  el.onclick=url?()=>window.open(url,'_blank'):null;
+  if(url)el.textContent+=' — cliquer pour ouvrir';
+}
+function copyRm(id){
+  const el=document.getElementById(id);
+  const text=el.textContent||el.innerText||'';
+  if(!text.trim()){showStatus('Rien à copier — générez d\'abord le contenu.','warning');return}
+  navigator.clipboard.writeText(text).then(()=>showStatus('Copié!','success')).catch(()=>{
+    const r=document.createRange();r.selectNode(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);document.execCommand('copy');showStatus('Copié!','success');
+  });
+}
+
+// NUTRIMENTS
+const NUTRI=[['Lipides','lipides','valeur_quotidienne_lipide','g'],['Gras saturés','gras_satures','valeur_quotidienne_gras_satures','g'],['Cholestérol','cholesterol','valeur_quotidienne_cholesterol','mg'],['Sodium','sodium','valeur_quotidienne_sodium','mg'],['Glucides','glucides','valeur_quotidienne_glucide','g'],['Fibres','fibres','valeur_quotidienne_fibres','g'],['Protéines','proteines',null,'g']];
+function buildNutri(){
+  const c=document.getElementById('nutri-rows');
+  NUTRI.forEach(([label,field,vq,unit])=>{
+    const r=document.createElement('div');r.className='nutri-row';
+    r.innerHTML=`<div class="nutri-label">${label}</div><div class="fg"><input type="text" id="${field}" placeholder="0 ${unit}"></div>${vq?`<div class="fg"><input type="text" id="${vq}" placeholder="0 %"></div>`:'<div></div>'}`;
+    c.appendChild(r);
+  });
+}
+
+// INGRÉDIENTS
+let ingC=0;
+function addGroupeIngredients(nom=''){
+  const id='ig'+(++ingC);
+  const root=document.getElementById('ingredients-root');
+  const d=document.createElement('div');d.className='item-group';d.id=id;
+  d.innerHTML=`<div class="item-group-head"><input type="text" placeholder="Nom du groupe (ex. Vinaigrette maison)" data-role="nom_de_litem" value="${(nom||'').replace(/"/g,'&quot;')}"><button class="btn-remove-inline" onclick="this.closest('.item-group').remove()">×</button></div><div class="item-group-body"><div id="${id}_list"></div><button class="btn-add-sub" onclick="addIng('${id}_list')">+ Ingrédient</button></div>`;
+  root.appendChild(d);return id;
+}
+function addIng(lid,data={}){
+  const list=document.getElementById(lid);
+  const n=list.querySelectorAll('.item-row').length+1;
+  const d=document.createElement('div');d.className='item-row';
+  const esc=s=>(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const iconeVal=esc(data.icone||'');
+  const iconeImg=data.icone?`<img src="${iconeVal}" style="width:18px;height:18px;object-fit:contain">`:'';
+  d.innerHTML=`<button class="btn-remove" onclick="this.closest('.item-row').remove()">×</button><div class="item-row-inner"><div class="item-num">Ingrédient ${n}</div><div class="grid-2" style="margin-bottom:8px"><div class="fg"><label>nom_de_lingredient</label><input type="text" data-role="nom_de_lingredient" value="${esc(data.nom)}" placeholder="Huile d'olive"></div><div class="fg"><label>information_supplementaire_ingredient</label><input type="text" data-role="info_supp" value="${esc(data.info)}" placeholder="en fines juliennes"></div></div><div class="grid-6"><div class="fg"><label>qte-trad</label><input type="text" data-role="qte_trad" value="${esc(data.qte_trad)}" placeholder="1"></div><div class="fg"><label>fraction_trad</label><input type="text" data-role="fraction_trad" value="${esc(data.frac_trad||'*pas de fraction*')}" placeholder="*pas de fraction*"></div><div class="fg"><label>trad_unite</label><input type="text" data-role="trad_unite" value="${esc(data.unite_trad)}" placeholder="tasse"></div><div class="fg"><label>qte-metrique</label><input type="text" data-role="qte_metrique" value="${esc(data.qte_metrique)}" placeholder="60 ml"></div><div class="fg"><label>fraction_metrique</label><input type="text" data-role="fraction_metrique" value="${esc(data.frac_metrique||'*pas de fraction*')}" placeholder="*pas de fraction*"></div><div class="fg"><label>metrique_unit</label><input type="text" data-role="metrique_unit" value="${esc(data.unite_metrique||'*pas unite*')}" placeholder="ml"></div></div><div style="display:flex;align-items:center;gap:8px;margin-top:4px"><input type="checkbox" data-role="tag_cloud" ${data.tag_cloud!==false?'checked':''} style="width:15px;height:15px;accent-color:var(--green)"><label style="font-size:12px;color:var(--text-secondary)">tag_cloud_display</label></div><div style="margin-top:8px"><div class="fg" style="margin-bottom:4px"><label>icone_ingredient (URL)</label><input type="text" data-role="icone_ingredient" value="${iconeVal}" placeholder="https://bonpourtoi.ca/app/uploads/...svg" style="font-size:12px"></div><button class="icon-picker-btn" id="iconbtn_${n}" onclick="openIconModal(this.parentElement.querySelector('[data-role=icone_ingredient]'))">${iconeImg} Choisir une icône</button></div></div>`;
+  list.appendChild(d);
+}
+
+// ÉTAPES
+let etpC=0;
+function addGroupeEtapes(nom=''){
+  const id='et'+(++etpC);
+  const root=document.getElementById('etapes-root');
+  const d=document.createElement('div');d.className='item-group';d.id=id;
+  d.innerHTML=`<div class="item-group-head"><input type="text" placeholder="Nom du groupe (ex. Salade de chou rouge)" data-role="nom_de_litem_etape" value="${(nom||'').replace(/"/g,'&quot;')}"><button class="btn-remove-inline" onclick="this.closest('.item-group').remove()">×</button></div><div class="item-group-body"><div id="${id}_list"></div><button class="btn-add-sub" onclick="addEtape('${id}_list')">+ Étape</button></div>`;
+  root.appendChild(d);return id;
+}
+function addEtape(lid,data={}){
+  const list=document.getElementById(lid);
+  const d=document.createElement('div');d.className='item-row';
+  d.innerHTML=`<button class="btn-remove" onclick="this.closest('.item-row').remove()">×</button><div class="item-row-inner"><div class="fg" style="margin-bottom:8px"><label>etape_title</label><input type="text" data-role="etape_title" placeholder="Préparer la vinaigrette"></div><div class="fg"><label>etape</label><textarea data-role="etape" style="min-height:80px;resize:vertical;font-size:14px;width:100%"></textarea></div></div>`;
+  list.appendChild(d);
+  if(data.titre)d.querySelector('[data-role="etape_title"]').value=data.titre;
+  if(data.etape)d.querySelector('[data-role="etape"]').value=data.etape;
+}
+
+function addAlternative(text=''){
+  const root=document.getElementById('alternatives-root');
+  const d=document.createElement('div');d.className='item-row';d.style.marginBottom='8px';
+  d.innerHTML=`<button class="btn-remove" onclick="this.closest('.item-row').remove()">×</button><div class="item-row-inner"><div class="fg"><label>description</label><textarea data-role="description" style="min-height:80px;resize:vertical;font-size:14px;width:100%"></textarea></div></div>`;
+  root.appendChild(d);
+  if(text)d.querySelector('[data-role="description"]').value=text;
+}
+
+function addAccompagnement(data={}){
+  const root=document.getElementById('accompagnements-root');
+  const d=document.createElement('div');d.style.cssText='display:flex;gap:10px;align-items:flex-end;margin-bottom:8px';
+  d.innerHTML=`<div class="fg" style="flex:1"><label>ingredient</label><input type="text" data-role="ingredient" placeholder="Poulet grillé ou rôti"></div><div class="fg" style="width:200px"><label>icone (URL)</label><input type="text" data-role="icone" placeholder="https://..."></div><button class="btn-remove-inline" onclick="this.parentElement.remove()">×</button>`;
+  root.appendChild(d);
+  if(data.ingredient)d.querySelector('[data-role="ingredient"]').value=data.ingredient;
+  if(data.icone)d.querySelector('[data-role="icone"]').value=data.icone;
+}
+
+function addProduit(){
+  const root=document.getElementById('produits-root');
+  const d=document.createElement('div');d.className='item-row';d.style.marginBottom='8px';
+  d.innerHTML=`<button class="btn-remove" onclick="this.closest('.item-row').remove()">×</button><div class="item-row-inner"><div class="grid-2" style="margin-bottom:8px"><div class="fg"><label>produit_essentiel_recette</label><input type="text" data-role="produit" placeholder="Fouet (10 pouces)"></div><div class="fg"><label>bouton_essentiel_recette (URL)</label><input type="text" data-role="bouton" placeholder="https://amzlink.to/..."></div></div><div class="check-row"><input type="checkbox" data-role="feuille"><label>feuille_essentiel_recette</label></div></div>`;
+  root.appendChild(d);
+}
+
+function addFaq(data={}){
+  const root=document.getElementById('faq-root');
+  const d=document.createElement('div');d.className='item-row';d.style.marginBottom='8px';
+  d.innerHTML=`<button class="btn-remove" onclick="this.closest('.item-row').remove()">×</button><div class="item-row-inner"><div class="fg" style="margin-bottom:8px"><label>contenu_visible_faq (question)</label><input type="text" data-role="question" placeholder="Est-il possible de remplacer..."></div><div class="fg"><label>contenu_cache_faq (réponse)</label><textarea data-role="reponse" style="min-height:80px;resize:vertical;font-size:14px;width:100%"></textarea></div></div>`;
+  root.appendChild(d);
+  if(data.q)d.querySelector('[data-role="question"]').value=data.q;
+  if(data.r)d.querySelector('[data-role="reponse"]').value=data.r;
+}
+
+// PUB SELECTOR
+let searchTimers={};
+function addPubSel(containerId,postType,fieldRole){
+  const container=document.getElementById(containerId);
+  const uid='ps_'+Date.now();
+  const wrapper=document.createElement('div');
+  wrapper.dataset.fieldRole=fieldRole;wrapper.dataset.selId='';wrapper.style.cssText='margin-bottom:8px';
+  wrapper.innerHTML=`<div style="display:flex;gap:8px;align-items:center"><div class="pub-wrap" style="flex:1"><div class="fg"><input type="text" id="${uid}_in" placeholder="Rechercher par titre..." autocomplete="off"></div><div class="pub-dropdown" id="${uid}_drop"></div></div><button class="btn-remove-inline" style="position:static" onclick="this.closest('[data-field-role]').remove()">×</button></div><div id="${uid}_tag" class="pub-tags"></div>`;
+  container.appendChild(wrapper);
+  const input=document.getElementById(uid+'_in'),drop=document.getElementById(uid+'_drop'),tag=document.getElementById(uid+'_tag');
+  input.addEventListener('input',()=>{
+    clearTimeout(searchTimers[uid]);
+    const q=input.value.trim();
+    if(q.length<2){drop.classList.remove('open');return}
+    drop.innerHTML='<div class="pub-searching">Recherche...</div>';drop.classList.add('open');
+    searchTimers[uid]=setTimeout(async()=>{
+      const user=v('wp-user'),pass=v('wp-pass');
+      if(!user||!pass){drop.innerHTML='<div class="pub-searching">Entrez vos identifiants.</div>';return}
+      try{
+        const ep=postType==='posts'?'posts':'recettes';
+        const res=await fetch('https://bpt-proxy.hubert-bonpourtoi.workers.dev',{method:'POST',headers:{'X-Target-URL':WP+'/wp-json/wp/v2/'+ep+'?search='+encodeURIComponent(q)+'&per_page=8&status=publish','Content-Type':'application/json','X-Method-Override':'GET'},body:JSON.stringify({})});
+        const data=await res.json();
+        if(!Array.isArray(data)||!data.length){drop.innerHTML='<div class="pub-searching">Aucun résultat.</div>';return}
+        drop.innerHTML='';
+        data.forEach(item=>{
+          const title=item.title?.rendered||item.title||'';
+          const opt=document.createElement('div');opt.className='pub-opt';
+          opt.innerHTML=`<span>${title}</span><span class="pub-opt-id">#${item.id}</span>`;
+          opt.onclick=()=>{wrapper.dataset.selId=item.id;input.value='';drop.classList.remove('open');tag.innerHTML=`<span class="pub-tag">${title} <span style="font-size:10px;opacity:.6">#${item.id}</span><button onclick="this.closest('[data-field-role]').dataset.selId='';this.closest('.pub-tags').innerHTML=''">×</button></span>`};
+          drop.appendChild(opt);
+        });
+      }catch(e){drop.innerHTML=`<div class="pub-searching">Erreur : ${e.message}</div>`}
+    },400);
+  });
+  document.addEventListener('click',e=>{if(!wrapper.contains(e.target))drop.classList.remove('open')});
+}
+
+// GÉNÉRATION CLAUDE
+async function generateWithClaude(){
+  const ingredients=v('raw-ingredients'),steps=v('raw-steps'),portions=v('gen-portions'),title=v('post-title'),notes=v('gen-notes');
+  if(!ingredients||!steps){showStatus('Veuillez entrer les ingrédients et les étapes avant de générer.','error');return}
+  if(!title){showStatus('Veuillez entrer un titre provisoire pour la recette.','error');return}
+  const overlay=document.getElementById('loading-overlay');
+  const loadingSub=document.getElementById('loading-sub');
+  overlay.classList.add('active');
+  document.getElementById('gen-btn').disabled=true;
+  const msgs=['Claude analyse la recette...','Structuration des ingrédients...','Rédaction de l\'introduction SEO...','Calcul des valeurs nutritives...','Génération de la FAQ...','Rédaction des alternatives...','Optimisation SEO...','Finalisation du contenu...'];
+  let mi=0;const mi_int=setInterval(()=>{loadingSub.textContent=msgs[mi%msgs.length];mi++},2500);
+  try{
+    const response=await fetch('https://bpt-proxy.hubert-bonpourtoi.workers.dev',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:16000,
+        messages:[{role:'user',content:buildPrompt(title,ingredients,steps,portions,notes)}]
+      })
+    });
+    const data=await response.json();
+    if(data.error)throw new Error(data.error.message||'Erreur API');
+    const text=data.content?.[0]?.text||'';
+    const jsonMatch=text.match(/```json\s*([\s\S]*?)\s*```/)||[null,text.match(/\{[\s\S]*\}/)?.[0]];
+    if(!jsonMatch||!jsonMatch[1])throw new Error('Format de réponse inattendu — le JSON n\'a pas pu être extrait');
+    const result=JSON.parse(jsonMatch[1]);
+    fillForm(result);
+    showStatus('Génération terminée! Vérifiez chaque onglet avant de publier.','success');
+    switchTab('seo');
+  }catch(e){
+    showStatus('Erreur lors de la génération : '+e.message,'error');
+    console.error(e);
+  }finally{
+    clearInterval(mi_int);overlay.classList.remove('active');document.getElementById('gen-btn').disabled=false;
+  }
+}
+
+function buildPrompt(title,ingredients,steps,portions,notes){
+  return `Tu es l'assistant de contenu de bonpourtoi.ca. Analyse cette recette et génère UNIQUEMENT un bloc JSON structuré. Ne mets RIEN avant ni après le bloc JSON.
+
+RECETTE :
+Titre provisoire : ${title}
+Portions : ${portions||'à estimer'}
+${notes?'Notes : '+notes:''}
+
+INGRÉDIENTS :
+${ingredients}
+
+ÉTAPES DE PRÉPARATION :
+${steps}
+
+==============================
+INSTRUCTIONS COMPLÈTES bonpourtoi.ca — À SUIVRE À LA LETTRE
+==============================
+
+IDENTITÉ DE LA MARQUE :
+bonpourtoi.ca est une source d'inspiration culinaire qui célèbre les bonnes choses du quotidien. La marque est extravagante, addictive, sociable et ouverte — elle reflète la culture populaire à travers la nourriture, est en avance sur les tendances et donne faim. Tout le contenu doit être coloré, dynamique, attrayant et inspirant, avec un ton direct, chaleureux et sans prétention. Le registre est populaire et accessible, jamais élitiste ni robotisé.
+
+INDICATIONS GÉNÉRALES :
+- Tout le texte doit être rédigé à la deuxième personne du singulier (« tu »)
+- Les titres ne prennent une majuscule qu'au premier mot (sauf noms propres)
+- Ne jamais mettre d'espace avant un « ? » et un « ! »
+- Ne pas écrire « œ », mais bien « oe » dans les mots comme coeur, oeuf et boeuf
+- Le texte doit toujours se lire naturellement, sans sonner robotisé
+- Le ton est instructif, amusant et cordial, accessible aux cuisiniers amateurs
+- Ne pas mettre de « – » dans le texte
+
+ÉTAPE 1 — INTRODUCTION OPTIMISÉE POUR LE SEO :
+- Rédige une introduction dynamique et intéressante qui donne le goût de cuisiner la recette
+- Structure OBLIGATOIRE :
+  * Titre H2 en gras : commence par un verbe d'action et contient « la meilleure recette de [titre] ». Ex : <h2><strong>Pour accompagner tes repas, cuisine la meilleure recette de salade de chou rouge!</strong></h2>
+  * Deux paragraphes informatifs destinés aux cuisiniers amateurs
+  * Le premier paragraphe commence par un déterminant et le H1 de la recette
+  * Titre H3 en gras dynamique en lien avec la recette. Ex : <h3><strong>Transforme cette bonne salade d'accompagnement en salade-repas!</strong></h3>
+  * Deux autres paragraphes informatifs complémentaires
+- Ne pas faire de listes dans cette section
+- Utiliser des mots de transition pour assurer la fluidité
+
+ÉTAPE 2 — MÉTA-DESCRIPTION ET TITLE TAG :
+- Méta-description en moins de 140 caractères naturelle et qui incite à cuisiner
+- Elle doit inclure « la meilleure recette de [titre] »
+- Commence toujours par un verbe d'action
+- Title tag SEO pertinent, long tail, incitatif au clic, sans « – »
+
+ÉTAPE 3 — POURQUOI ÇA FONCTIONNE :
+Section 1 — « Pourquoi ces [type de plat] sont parfaits pour [moment de consommation] » :
+- Courte introduction de 1 à 2 phrases
+- 4 bullets maximum, chaque bullet a un sous-titre en gras suivi d'une explication culinaire, organoleptique, sur la chimie des aliments
+- Format OBLIGATOIRE pour les bullets :
+[list-point]
+<ul>
+<li><span style="color: #00bbb4;"><strong>Titre bullet :</strong></span> Explication.</li>
+<li><span style="color: #00bbb4;"><strong>Titre bullet :</strong></span> Explication.</li>
+</ul>
+[/list-point]
+- Ne JAMAIS utiliser * pour les bullets, toujours utiliser le format <ul><li> ci-dessus
+- Les sous-titres et explications doivent être spécifiques à la recette, pas génériques
+Section 2 — « Avec quoi servir [nom de la recette] » :
+- Liste de 4 à 8 accompagnements sur des lignes différentes, sans puces
+- Suggestions courtes 3-4 mots, pas de déterminants au début
+
+ÉTAPE 4 — VALEURS NUTRITIVES :
+- Calculer selon le FCEN canadien
+- Définir une portion consommée réaliste
+- % VQ calculés avec : lipides 65g, gras saturés 20g, cholestérol 300mg, sodium 2400mg, glucides 300g, fibres 25g
+- Pas de % VQ pour calories et protéines
+- Fractions typographiques pour les portions : ¼ ½ ¾ ⅓ ⅔ ⅛
+
+ÉTAPE 5 — TÉMOIGNAGE :
+- Générer EXACTEMENT 3 citations distinctes séparées par une ligne vide
+- Chaque citation : MAXIMUM 25 mots, à la première personne, ton québécois friendly naturel
+- Chaque citation évoque une émotion ou un souvenir lié au fait de cuisiner ou manger ce plat
+- Mentionner parfois l'entourage (famille, amis, etc.)
+- Ne pas écrire les citations entre guillemets
+- Toujours écrire le nom de l'auteur sous chaque citation : Hubert Cormier ou Paméla Rousseau
+- Alterner les auteurs entre les 3 citations
+- Format attendu dans recette_temoignage_texte :
+  Citation 1 max 25 mots\nHubert Cormier\n\nCitation 2 max 25 mots\nPaméla Rousseau\n\nCitation 3 max 25 mots\nHubert Cormier
+
+ÉTAPE 6 — MOTS CLÉS SEO :
+- Lister des mots-clés SEO pertinents selon les recherches Google
+- Les classer par ordre de pertinence décroissante
+- Inclure le mot-clé principal de longue traîne et des variantes
+- Débuter la liste par une majuscule, terminer par un point
+
+ÉTAPE 7 — FAQ :
+- Titre : « Questions fréquentes : »
+- 5 à 8 questions pertinentes que les gens pourraient se poser, formulées comme des questions Google réelles
+- Réponses concises et utiles de 80 à 150 mots
+- Ne rien mettre en gras dans les réponses
+- Formulation impersonnelle (éviter on, je, puis-je)
+- Ne jamais écrire « Peut-on… » mais bien « Est-ce possible de … »
+- TOUJOURS terminer les questions par ?
+- Favoriser les questions sur astuces cuisson, conservation, substitutions
+
+ÉTAPE 8 — SAISONS : Déterminer la ou les saisons (Été, Printemps, Automne, Hiver) — mettre dans mots_cles
+
+ÉTAPE 14 — TEMPS DE PRÉPARATION :
+- Estimer le temps de préparation, cuisson, réfrigération/congélation si spécifiés
+- Format schema : PT25M, PT0M, etc.
+
+ÉTAPE 15 — ÉTAPES DE PRÉPARATION :
+- Style livre de cuisine (infinitif présent)
+- Le champ etape_title contient déjà le résumé de l'étape — NE PAS le répéter dans le champ etape
+- Le champ etape contient UNIQUEMENT la description détaillée, sans répéter le titre en gras
+- Températures : °F avant °C ex. 350 °F (175 °C)
+- Pas d'intervalles de temps (pas « 5 à 7 min »), utiliser « min » et « h »
+
+ÉTAPE 16 — ALTERNATIVES :
+- 8 alternatives réparties en 3 sous-sections :
+  1. Substitutions pour allergies et critères nutritionnels (sans gluten, sans lactose, sans oeufs, moins sucré)
+  2. Idées pour occasions spéciales (Noël, brunch, cadeau gourmand, etc.)
+  3. Ajustement du profil aromatique (variantes de saveurs)
+- Chaque puce commence par « Pour une/Pour des… » + requête long tail
+- Mettre le début en gras : <strong>Pour une version sans gluten :</strong>
+- Indiquer les températures au format 350 °F (175 °C) si applicable
+- Quantités en impérial d'abord, métrique entre parenthèses
+
+ÉTAPE 17 — BON À SAVOIR (conseil d'Hubert) :
+- Trouver un sujet intéressant en lien avec la recette
+- Titre dynamique + texte d'environ 60 mots séparé en 2 petits paragraphes
+
+RÈGLES INGRÉDIENTS :
+- Noms : TOUJOURS commencer par une majuscule ex. "Huile d'olive"
+- Fractions : si la quantité est "1 ½ tasse" → qte_trad="1", frac_trad="½", unite_trad="tasse"
+- Si la quantité est "¼ tasse" → qte_trad="", frac_trad="¼", unite_trad="tasse"
+- Si pas de fraction → frac_trad="*pas de fraction*"
+- Fractions typographiques disponibles : ¼ ½ ¾ ⅓ ⅔ ⅛ ⅜ ⅝ ⅞
+
+==============================
+GÉNÈRE ce JSON en respectant EXACTEMENT ce format :
+==============================
+
+\`\`\`json
+{
+  "seo": {
+    "h1": "Titre H1 optimisé naturel avec le nom de la recette",
+    "slug": "slug-url-en-minuscules-avec-tirets",
+    "title_tag": "Title tag SEO long tail incitatif sans tiret au milieu",
+    "meta_description": "Méta moins de 140 caractères commence par verbe d'action inclut la meilleure recette de [nom]",
+    "mot_cle_principal": "mot-clé long tail principal",
+    "alt_text": "texte alternatif 8-15 mots sans point final"
+  },
+  "recette": {
+    "nombre_de_portions": "4 portions",
+    "temp_total_minutes": 25,
+    "temps_de_preparation": "25 min",
+    "temps_de_cuisson": "0 min",
+    "temps_de_refrigeration": "",
+    "temps_de_congelation": "",
+    "temps_de_preparation_schema": "PT25M",
+    "temps_de_cuisson_schema": "PT0M",
+    "temps_de_la_recette_pour_le_schema": "PT25M",
+    "niveau_de_difficulte": "Facile",
+    "ingredient_titre_de_section": "La meilleure recette de [titre]",
+    "introduction_wp": "<h2><strong>Titre H2 avec verbe d'action + la meilleure recette de [titre]!</strong></h2>\\n<p>Premier paragraphe introductif naturel commençant par un déterminant et le H1...</p>\\n<p>Deuxième paragraphe complémentaire riche...</p>\\n<h3><strong>Titre H3 dynamique en lien avec la recette!</strong></h3>\\n<p>Troisième paragraphe...</p>\\n<p>Quatrième paragraphe...</p>",
+    "liste_ingredients": [
+      {
+        "nom_de_litem": "Nom du groupe ex. Vinaigrette maison",
+        "ingredients": [
+          {
+            "nom": "Huile d'olive",
+            "qte_trad": "1",
+            "frac_trad": "½",
+            "unite_trad": "tasse",
+            "qte_metrique": "375 ml",
+            "frac_metrique": "*pas de fraction*",
+            "unite_metrique": "*pas d'unité*",
+            "info": "pressée à froid",
+            "tag_cloud": true
+          }
+        ]
+      }
+    ],
+    "etapes_de_preparation": [
+      {
+        "nom_groupe": "Nom du groupe d'étapes",
+        "etapes": [
+          {
+            "titre": "Titre de l'étape à l'infinitif",
+            "etape": "Description complète en style livre de cuisine à l'infinitif. Ne PAS répéter le titre etape_title dans ce champ."
+          }
+        ]
+      }
+    ],
+    "recette_alternatives": [
+      "<strong>Pour une version sans gluten :</strong> explication concrète avec quantités.",
+      "<strong>Pour une version sans lactose :</strong> explication.",
+      "<strong>Pour une version végétalienne :</strong> explication.",
+      "<strong>Pour une occasion spéciale :</strong> explication.",
+      "<strong>Pour une version plus légère :</strong> explication.",
+      "<strong>Pour un profil aromatique différent :</strong> explication.",
+      "<strong>Pour les soirs pressés :</strong> explication.",
+      "<strong>Pour le facteur WOW :</strong> explication."
+    ],
+    "titre_section_recettes_de_meme_aliment": "BON DANS LA BOUCHE : texte d'intro engageant",
+    "le_conseil_d_hubert_titre": "Titre dynamique du conseil en lien avec la recette?",
+    "le_conseil_dhubert": "Premier paragraphe environ 30 mots.\\n\\nDeuxième paragraphe environ 30 mots.",
+    "recette_temoignage_texte": "TROIS citations séparées par \n\n — chacune MAX 25 mots, sans guillemets, à la première personne, ton québécois chaleureux. Ex :\nCitation 1 (max 25 mots)\nHubert Cormier\n\nCitation 2 (max 25 mots)\nPaméla Rousseau\n\nCitation 3 (max 25 mots)\nHubert Cormier",
+    "recette_temoignage_auteur": "Hubert Cormier"
+  },
+  "pourquoi": {
+    "recette_fonctionne_titre_texte": "Pourquoi ces [type de plat] sont parfaits pour [moment de consommation]",
+    "recette_fonctionne_texte": "Courte introduction 1-2 phrases.\\n\\n[list-point]\\n<ul>\\n<li><span style=\"color: #00bbb4;\"><strong>Titre bullet 1 :</strong></span> Explication organoleptique spécifique à la recette.</li>\\n<li><span style=\"color: #00bbb4;\"><strong>Titre bullet 2 :</strong></span> Explication sur la chimie des aliments ou textures.</li>\\n<li><span style=\"color: #00bbb4;\"><strong>Titre bullet 3 :</strong></span> Explication sur les saveurs ou l\'équilibre.</li>\\n<li><span style=\"color: #00bbb4;\"><strong>Titre bullet 4 :</strong></span> Explication pratique ou technique.</li>\\n</ul>\\n[/list-point]",
+    "recette_fonctionne_titre_accompagnements": "Avec quoi servir [nom de la recette]",
+    "accompagnements": [
+      {"ingredient": "Accompagnement 1 sans déterminant", "icone": ""},
+      {"ingredient": "Accompagnement 2", "icone": ""},
+      {"ingredient": "Accompagnement 3", "icone": ""},
+      {"ingredient": "Accompagnement 4", "icone": ""},
+      {"ingredient": "Accompagnement 5", "icone": ""}
+    ]
+  },
+  "nutrition": {
+    "portion_valeur_nutritive": "1 portion (¼ de la recette)",
+    "calories": "280",
+    "lipides": "14 g",
+    "valeur_quotidienne_lipide": "22",
+    "gras_satures": "2 g",
+    "valeur_quotidienne_gras_satures": "10",
+    "cholesterol": "0 mg",
+    "valeur_quotidienne_cholesterol": "0",
+    "sodium": "120 mg",
+    "valeur_quotidienne_sodium": "5",
+    "glucides": "40 g",
+    "valeur_quotidienne_glucide": "13",
+    "fibres": "4 g",
+    "valeur_quotidienne_fibres": "16",
+    "proteines": "2 g",
+    "vn_portion": "1 portion (¼ de la recette)"
+  },
+  "faq": {
+    "titre_section_faq": "Questions fréquentes :",
+    "accordeons": [
+      {"question": "Question réelle style Google?", "reponse": "Réponse 80-150 mots formulation impersonnelle intègre mots-clés naturellement."},
+      {"question": "Question 2?", "reponse": "Réponse 2."},
+      {"question": "Question 3?", "reponse": "Réponse 3."},
+      {"question": "Question 4?", "reponse": "Réponse 4."},
+      {"question": "Question 5?", "reponse": "Réponse 5."},
+      {"question": "Question 6?", "reponse": "Réponse 6."}
+    ]
+  },
+  "mots_cles": "Mot-clé principal long tail, variante 1, variante 2, variante 3, variante 4, variante 5, variante 6, variante 7, variante 8, variante 9"
+}
+\`\`\`
+
+RETOURNE SEULEMENT LE BLOC JSON, rien d'autre`;
+}
+
+function fillForm(result){
+  if(result.seo){
+    const s=result.seo;
+    document.getElementById('seo-h1').textContent=s.h1||'';
+    document.getElementById('seo-slug').textContent=s.slug||'';
+    document.getElementById('seo-title').textContent=s.title_tag||'';
+    document.getElementById('seo-meta').textContent=s.meta_description||'';
+    document.getElementById('seo-kw').textContent=s.mot_cle_principal||'';
+    document.getElementById('seo-alt').textContent=s.alt_text||'';
+    document.getElementById('seo-badge').style.display='inline-block';
+    if(s.h1)document.getElementById('post-title').value=s.h1;
+  }
+  if(result.recette){
+    const r=result.recette;
+    setV('nombre_de_portions',r.nombre_de_portions);
+    setV('temp_total_minutes',r.temp_total_minutes);
+    setV('temps_de_preparation',r.temps_de_preparation);
+    setV('temps_de_cuisson',r.temps_de_cuisson);
+    setV('temps_de_refrigeration',r.temps_de_refrigeration);
+    setV('temps_de_congelation',r.temps_de_congelation);
+    setV('temps_de_preparation_schema',r.temps_de_preparation_schema);
+    setV('temps_de_cuisson_schema',r.temps_de_cuisson_schema);
+    setV('temps_de_la_recette_pour_le_schema',r.temps_de_la_recette_pour_le_schema);
+    if(r.niveau_de_difficulte){const sel=document.getElementById('niveau_de_difficulte');sel.value=r.niveau_de_difficulte;sel.classList.add('generated')}
+    setV('ingredient_titre_de_section',r.ingredient_titre_de_section);
+    setV('wp-content',r.introduction_wp);
+    setV('titre_section_recettes_de_meme_aliment',r.titre_section_recettes_de_meme_aliment);
+    setV('le_conseil_d_hubert_titre',r.le_conseil_d_hubert_titre);
+    setV('le_conseil_dhubert',r.le_conseil_dhubert);
+    setV('recette_temoignage_texte',r.recette_temoignage_texte);
+    setV('recette_temoignage_auteur',r.recette_temoignage_auteur);
+    document.getElementById('ingredients-root').innerHTML='';ingC=0;
+    (r.liste_ingredients||[]).forEach(grp=>{
+      const id=addGroupeIngredients(grp.nom_de_litem||'');
+      (grp.ingredients||[]).forEach(ing=>addIng(id+'_list',ing));
+    });
+    document.getElementById('etapes-root').innerHTML='';etpC=0;
+    (r.etapes_de_preparation||[]).forEach(grp=>{
+      const id=addGroupeEtapes(grp.nom_groupe||'');
+      (grp.etapes||[]).forEach(et=>addEtape(id+'_list',{titre:et.titre,etape:et.etape}));
+    });
+    document.getElementById('alternatives-root').innerHTML='';
+    (r.recette_alternatives||[]).forEach(alt=>addAlternative(alt));
+    document.getElementById('recette-badge').style.display='inline-block';
+  }
+  if(result.pourquoi){
+    const p=result.pourquoi;
+    setV('recette_fonctionne_titre_texte',p.recette_fonctionne_titre_texte);
+    setV('recette_fonctionne_texte',p.recette_fonctionne_texte);
+    setV('recette_fonctionne_titre_accompagnements',p.recette_fonctionne_titre_accompagnements);
+    document.getElementById('accompagnements-root').innerHTML='';
+    (p.accompagnements||[]).forEach(a=>addAccompagnement(a));
+    document.getElementById('pourquoi-badge').style.display='inline-block';
+  }
+  if(result.nutrition){
+    Object.keys(result.nutrition).forEach(key=>setV(key,result.nutrition[key]));
+    document.getElementById('nutrition-badge').style.display='inline-block';
+  }
+  if(result.faq){
+    setV('titre_section_faq',result.faq.titre_section_faq);
+    document.getElementById('faq-root').innerHTML='';
+    (result.faq.accordeons||[]).forEach(item=>addFaq({q:item.question,r:item.reponse}));
+    document.getElementById('faq-badge').style.display='inline-block';
+  }
+  if(result.mots_cles){
+    setV('keywords',result.mots_cles);
+    document.getElementById('motscles-badge').style.display='inline-block';
+  }
+  document.getElementById('footer-info').textContent='Contenu généré — vérifiez avant de publier';
+}
+
+// COLLECTE ET PUBLICATION
+function collectIngredients(){
+  return Array.from(document.getElementById('ingredients-root').querySelectorAll('.item-group')).map(grp=>({
+    nom_de_litem:grp.querySelector('[data-role="nom_de_litem"]')?.value.trim()||'',
+    ingredient:Array.from(grp.querySelectorAll('.item-row')).map(item=>({
+      nom_de_lingredient:item.querySelector('[data-role="nom_de_lingredient"]')?.value.trim()||'',
+      'qte-trad':item.querySelector('[data-role="qte_trad"]')?.value.trim()||'',
+      fraction_trad:item.querySelector('[data-role="fraction_trad"]')?.value.trim()||'',
+      trad_unite:item.querySelector('[data-role="trad_unite"]')?.value.trim()||'',
+      'qte-metrique':item.querySelector('[data-role="qte_metrique"]')?.value.trim()||'',
+      fraction_metrique:item.querySelector('[data-role="fraction_metrique"]')?.value.trim()||'',
+      metrique_unit:item.querySelector('[data-role="metrique_unit"]')?.value.trim()||'',
+      information_supplementaire_ingredient:item.querySelector('[data-role="info_supp"]')?.value.trim()||'',
+      tag_cloud_display:item.querySelector('[data-role="tag_cloud"]')?.checked?1:0
+    })).filter(i=>i.nom_de_lingredient)
+  })).filter(g=>g.nom_de_litem||g.ingredient.length);
+}
+function collectEtapes(){
+  return Array.from(document.getElementById('etapes-root').querySelectorAll('.item-group')).map(grp=>({
+    nom_de_litem_etape:grp.querySelector('[data-role="nom_de_litem_etape"]')?.value.trim()||'',
+    etapes_item:Array.from(grp.querySelectorAll('.item-row')).map(item=>({
+      etape_title:item.querySelector('[data-role="etape_title"]')?.value.trim()||'',
+      etape:item.querySelector('[data-role="etape"]')?.value.trim()||''
+    })).filter(e=>e.etape)
+  })).filter(g=>g.etapes_item.length);
+}
+function collectSel(cid,fr){return Array.from(document.getElementById(cid).querySelectorAll('[data-field-role]')).map(w=>({[fr]:w.dataset.selId})).filter(o=>o[fr])}
+
+async function publishToWP(){
+  const user=v('wp-user'),pass=v('wp-pass'),title=v('post-title');
+  if(!user||!pass){showStatus('Entrez vos identifiants de connexion.','error');toggleSettings();return}
+  if(!title){showStatus('Entrez un titre pour la recette.','error');return}
+  const btn=document.getElementById('pub-btn');
+  btn.disabled=true;document.getElementById('footer-info').textContent='Publication...';showStatus('Publication en cours...','loading');
+  const acf={
+    nombre_de_portions:v('nombre_de_portions'),temp_total_minutes:v('temp_total_minutes'),
+    temps_de_preparation:v('temps_de_preparation'),temps_de_cuisson:v('temps_de_cuisson'),
+    temps_de_refrigeration:v('temps_de_refrigeration'),temps_de_congelation:v('temps_de_congelation'),
+    temps_de_preparation_schema:v('temps_de_preparation_schema'),temps_de_cuisson_schema:v('temps_de_cuisson_schema'),
+    temps_de_la_recette_pour_le_schema:v('temps_de_la_recette_pour_le_schema'),
+    niveau_de_difficulte:v('niveau_de_difficulte'),ingredient_titre_de_section:v('ingredient_titre_de_section'),
+    liste_ingredients:collectIngredients(),etapes_de_preparation:collectEtapes(),
+    recette_alternatives:Array.from(document.getElementById('alternatives-root').querySelectorAll('[data-role="description"]')).map(el=>({description:el.value.trim()})).filter(a=>a.description),
+    titre_section_recettes_de_meme_aliment:v('titre_section_recettes_de_meme_aliment'),
+    recettes_de_meme_aliment:collectSel('sel-meme-aliment','recette'),
+    le_conseil_d_hubert_titre:v('le_conseil_d_hubert_titre'),le_conseil_dhubert:v('le_conseil_dhubert'),
+    recette_temoignage_texte:v('recette_temoignage_texte'),recette_temoignage_auteur:v('recette_temoignage_auteur'),
+    recette_fonctionne_titre_texte:v('recette_fonctionne_titre_texte'),recette_fonctionne_texte:v('recette_fonctionne_texte'),
+    recette_fonctionne_titre_accompagnements:v('recette_fonctionne_titre_accompagnements'),
+    recette_fonctionne_accompagnements:Array.from(document.getElementById('accompagnements-root').children).map(row=>({ingredient:row.querySelector('[data-role="ingredient"]')?.value.trim()||'',icone:row.querySelector('[data-role="icone"]')?.value.trim()||''})).filter(a=>a.ingredient),
+    portion_valeur_nutritive:v('portion_valeur_nutritive'),calories:v('calories'),
+    lipides:v('lipides'),valeur_quotidienne_lipide:v('valeur_quotidienne_lipide'),
+    gras_satures:v('gras_satures'),valeur_quotidienne_gras_satures:v('valeur_quotidienne_gras_satures'),
+    cholesterol:v('cholesterol'),valeur_quotidienne_cholesterol:v('valeur_quotidienne_cholesterol'),
+    sodium:v('sodium'),valeur_quotidienne_sodium:v('valeur_quotidienne_sodium'),
+    glucides:v('glucides'),valeur_quotidienne_glucide:v('valeur_quotidienne_glucide'),
+    fibres:v('fibres'),valeur_quotidienne_fibres:v('valeur_quotidienne_fibres'),proteines:v('proteines'),
+    fge:v('fge'),fruits:v('fruits'),legumes:v('legumes'),plav:v('plav'),plaisir:v('plaisir'),gras:v('gras'),
+    sw_proteines:v('sw_proteines'),vn_portion:v('vn_portion'),
+    afficher_la_section_essentiel_recette:v('afficher_la_section_essentiel_recette'),
+    texte_etiquette_essentiel_recette:v('texte_etiquette_essentiel_recette'),
+    produits_essentiel:Array.from(document.getElementById('produits-root').querySelectorAll('.item-row')).map(item=>({produit_essentiel_recette:item.querySelector('[data-role="produit"]')?.value.trim()||'',bouton_essentiel_recette:item.querySelector('[data-role="bouton"]')?.value.trim()||'',feuille_essentiel_recette:item.querySelector('[data-role="feuille"]')?.checked?1:0})).filter(p=>p.produit_essentiel_recette),
+    texte_essentiel_recette:v('texte_essentiel_recette'),bouton_amazon_essentiel_recette:v('bouton_amazon_essentiel_recette'),
+    titre_section_faq:v('titre_section_faq'),
+    accordeons_faq:Array.from(document.getElementById('faq-root').querySelectorAll('.item-row')).map(item=>({contenu_visible_faq:item.querySelector('[data-role="question"]')?.value.trim()||'',contenu_cache_faq:item.querySelector('[data-role="reponse"]')?.value.trim()||''})).filter(f=>f.contenu_visible_faq),
+    recettes:collectSel('sel-autres-recettes','recette'),
+    articles_relies:collectSel('sel-articles-relies','article'),
+    suggestions_de_recettes:collectSel('sel-suggestions','recette_vedette'),
+    keywords:v('keywords')
+  };
+  const auth='Basic '+btoa(user+':'+pass);
+  const proxyHeaders={'Content-Type':'application/json','Authorization':auth,'X-Target-URL':WP+'/wp-json/wp/v2/recettes'};
+  const PROXY='https://bpt-proxy.hubert-bonpourtoi.workers.dev';
+  try{
+    // Étape 1 : créer brouillon sans ACF
+    showStatus('Étape 1/2 — Création du brouillon...','loading');
+    const res=await fetch(PROXY,{method:'POST',headers:proxyHeaders,body:JSON.stringify({title,status:'draft',content:v('wp-content')})});
+    const data=await res.json();
+    if(!res.ok||!data.id){
+      showStatus('Erreur : '+(data.message||JSON.stringify(data)),'error');
+      document.getElementById('footer-info').textContent='Erreur de publication';
+      btn.disabled=false;return;
+    }
+    // Étape 2 : envoyer champs ACF via meta (update_post_meta natif WordPress)
+    showStatus('Étape 2/2 — Importation des champs...','loading');
+    // Construire l'objet meta avec tous les champs simples
+    const meta={};
+    const simpleFields=['nombre_de_portions','temp_total_minutes','temps_de_preparation','temps_de_cuisson',
+      'temps_de_refrigeration','temps_de_congelation','temps_de_preparation_schema','temps_de_cuisson_schema',
+      'temps_de_la_recette_pour_le_schema','niveau_de_difficulte','ingredient_titre_de_section',
+      'titre_section_recettes_de_meme_aliment','le_conseil_d_hubert_titre','le_conseil_dhubert',
+      'recette_temoignage_texte','recette_temoignage_auteur','recette_fonctionne_titre_texte',
+      'recette_fonctionne_texte','recette_fonctionne_titre_accompagnements',
+      'portion_valeur_nutritive','calories','lipides','valeur_quotidienne_lipide','gras_satures',
+      'valeur_quotidienne_gras_satures','cholesterol','valeur_quotidienne_cholesterol','sodium',
+      'valeur_quotidienne_sodium','glucides','valeur_quotidienne_glucide','fibres',
+      'valeur_quotidienne_fibres','proteines','fge','fruits','legumes','plav','plaisir','gras',
+      'sw_proteines','vn_portion','afficher_la_section_essentiel_recette',
+      'texte_etiquette_essentiel_recette','texte_essentiel_recette','bouton_amazon_essentiel_recette',
+      'titre_section_faq','keywords'];
+    simpleFields.forEach(f=>{if(acf[f]!==undefined&&acf[f]!=='')meta[f]=acf[f];});
+    // Ajouter les champs complexes sérialisés
+    const complexFields=['liste_ingredients','etapes_de_preparation','recette_alternatives',
+      'recette_fonctionne_accompagnements','produits_essentiel','accordeons_faq',
+      'recettes_de_meme_aliment','recettes','articles_relies','suggestions_de_recettes'];
+    complexFields.forEach(f=>{if(acf[f]&&(Array.isArray(acf[f])?acf[f].length:acf[f]))meta[f]=JSON.stringify(acf[f]);});
+    const res2=await fetch(PROXY,{method:'PUT',headers:{...proxyHeaders,'X-Target-URL':WP+'/wp-json/wp/v2/recettes/'+data.id},body:JSON.stringify({acf,meta})});
+    const data2=await res2.json();
+    const url=`${WP}/wp-admin/post.php?post=${data.id}&action=edit`;
+    if(res2.ok){
+      showStatus(`Brouillon #${data.id} créé avec succès — cliquer pour ouvrir`,'success',url);
+      document.getElementById('footer-info').textContent=`Recette #${data.id} — brouillon`;
+    }else{
+      showStatus(`Brouillon #${data.id} créé mais erreur meta : ${data2.message||'inconnue'} — cliquer pour ouvrir`,'warning');
+      document.getElementById('footer-info').textContent=`Recette #${data.id} — partiel`;
+      document.getElementById('status-bar').onclick=()=>window.open(url,'_blank');
+    }
+  }catch(e){showStatus('Erreur de connexion : '+e.message,'error');document.getElementById('footer-info').textContent='Erreur de connexion'}
+  btn.disabled=false;
+}
+
+function clearForm(){
+  if(!confirm('Réinitialiser tous les champs?'))return;
+  document.querySelectorAll('input:not(#wp-user):not(#wp-pass),textarea').forEach(el=>{if(el.type==='checkbox')el.checked=false;else el.value=''});
+  document.querySelectorAll('select:not(#wp-user)').forEach(el=>el.selectedIndex=0);
+  ['seo-h1','seo-slug','seo-title','seo-meta','seo-kw','seo-alt'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=''});
+  ['ingredients-root','etapes-root','alternatives-root','accompagnements-root','produits-root','faq-root','sel-meme-aliment','sel-autres-recettes','sel-articles-relies','sel-suggestions'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=''});
+  ingC=0;etpC=0;
+  addGroupeIngredients();addGroupeEtapes();addProduit();
+  document.querySelectorAll('.generated-badge').forEach(b=>b.style.display='none');
+  document.getElementById('footer-info').textContent='Prêt à publier';
+  document.getElementById('status-bar').className='status-bar';
+}
+
+// ICON PICKER
+let iconPickerTarget = null;
+let allIcons = [];
+
+async function openIconModal(inputEl) {
+  iconPickerTarget = inputEl;
+  document.getElementById('icon-modal').classList.add('open');
+  document.getElementById('icon-search').value = '';
+  
+  if (allIcons.length === 0) {
+    await loadIcons();
+  } else {
+    renderIcons(allIcons);
+  }
+}
+
+function closeIconModal() {
+  document.getElementById('icon-modal').classList.remove('open');
+}
+
+async function loadIcons() {
+  const user = v('wp-user'), pass = v('wp-pass');
+  if (!user || !pass) {
+    document.getElementById('icon-grid').innerHTML = '<div class="icon-modal-loading">Entrez vos identifiants WordPress dans les paramètres de connexion.</div>';
+    return;
+  }
+  document.getElementById('icon-grid').innerHTML = '<div class="icon-modal-loading">Chargement des icônes...</div>';
+  try {
+    let page = 1, icons = [];
+    while (true) {
+      const res = await fetch('https://bpt-proxy.hubert-bonpourtoi.workers.dev', {
+        method: 'POST',
+        headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass), 'X-Target-URL': WP+'/wp-json/wp/v2/media?mime_type=image/svg%2Bxml&per_page=100&page='+page, 'Content-Type': 'application/json', 'X-Method-Override': 'GET' },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) break;
+      const data = await res.json();
+      if (!data.length) break;
+      icons = icons.concat(data);
+      if (data.length < 100) break;
+      page++;
+    }
+    allIcons = icons;
+    renderIcons(allIcons);
+  } catch(e) {
+    document.getElementById('icon-grid').innerHTML = '<div class="icon-modal-loading">Erreur : ' + e.message + '</div>';
+  }
+}
+
+function renderIcons(icons) {
+  const grid = document.getElementById('icon-grid');
+  if (!icons.length) {
+    grid.innerHTML = '<div class="icon-modal-loading">Aucune icône SVG trouvée.</div>';
+    return;
+  }
+  grid.innerHTML = icons.map(icon => {
+    const url = icon.source_url || '';
+    const name = icon.title?.rendered || url.split('/').pop().replace('.svg','');
+    return `<div class="icon-modal-item" onclick="selectIcon('${url}', this)" title="${name}">
+      <img src="${url}" alt="${name}" onerror="this.parentElement.style.display='none'">
+      <span>${name}</span>
+    </div>`;
+  }).join('');
+}
+
+function filterIcons() {
+  const q = document.getElementById('icon-search').value.toLowerCase();
+  const filtered = q ? allIcons.filter(i => {
+    const name = (i.title?.rendered || i.source_url || '').toLowerCase();
+    return name.includes(q);
+  }) : allIcons;
+  renderIcons(filtered);
+}
+
+function selectIcon(url, el) {
+  if (iconPickerTarget) {
+    iconPickerTarget.value = url;
+    iconPickerTarget.classList.add('generated');
+    // Update button preview
+    const btn = iconPickerTarget.parentElement.nextElementSibling;
+    if (btn && btn.classList.contains('icon-picker-btn')) {
+      let img = btn.querySelector('img');
+      if (!img) { img = document.createElement('img'); btn.prepend(img); }
+      img.src = url;
+      img.style.cssText = 'width:18px;height:18px;object-fit:contain';
+    }
+  }
+  closeIconModal();
+}
+
+document.getElementById('icon-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeIconModal();
+});
+
+
+</script>
+</body>
+</html>
