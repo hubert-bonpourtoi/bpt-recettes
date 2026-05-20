@@ -991,7 +991,7 @@ async function publishToWP(){
       'recette_fonctionne_accompagnements','produits_essentiel','accordeons_faq',
       'recettes_de_meme_aliment','recettes','articles_relies','suggestions_de_recettes'];
     complexFields.forEach(f=>{if(acf[f]&&(Array.isArray(acf[f])?acf[f].length:acf[f]))meta[f]=JSON.stringify(acf[f]);});
-    const res2=await fetch(PROXY,{method:'PUT',headers:{...wpHeaders,'X-Target-URL':WP+'/wp-json/wp/v2/recettes/'+data.id},body:JSON.stringify({acf,meta})});
+    const res2=await fetch(PROXY,{method:'PUT',headers:{...wpHeaders,'X-Target-URL':WP+'/wp-json/wp/v2/recettes/'+data.id},body:JSON.stringify({acf})});
     const data2=await res2.json();
     const url=`${WP}/wp-admin/post.php?post=${data.id}&action=edit`;
     if(res2.ok){
