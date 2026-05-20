@@ -957,11 +957,11 @@ async function publishToWP(){
   };
   const auth='Basic '+btoa(user+':'+pass);
   const PROXY='https://bpt-proxy.hubert-bonpourtoi.workers.dev';
-  const wpHeaders={'Content-Type':'application/json','Authorization':auth,'X-Target-URL':WP+'/wp-json/wp/v2/recettes'};
+  const wpHeaders={'Content-Type':'application/json','Authorization':auth};
   try{
-    // Étape 1 : créer brouillon via proxy
+    // Étape 1 : créer brouillon directement sur WP
     showStatus('Étape 1/2 — Création du brouillon...','loading');
-    const res=await fetch(PROXY,{method:'POST',headers:wpHeaders,body:JSON.stringify({title,status:'draft',content:v('wp-content')})});
+    const res=await fetch(WP+'/wp-json/wp/v2/recettes',{method:'POST',headers:wpHeaders,body:JSON.stringify({title,status:'draft',content:v('wp-content')})});
     const data=await res.json();
     if(!res.ok||!data.id){
       showStatus('Erreur : '+(data.message||JSON.stringify(data)),'error');
@@ -991,8 +991,8 @@ async function publishToWP(){
       'recette_fonctionne_accompagnements','produits_essentiel','accordeons_faq',
       'recettes_de_meme_aliment','recettes','articles_relies','suggestions_de_recettes'];
     complexFields.forEach(f=>{if(acf[f]&&(Array.isArray(acf[f])?acf[f].length:acf[f]))meta[f]=JSON.stringify(acf[f]);});
-    const putHeaders={'Content-Type':'application/json','Authorization':auth,'X-Target-URL':WP+'/wp-json/wp/v2/recettes/'+data.id};
-    const res2=await fetch(PROXY,{method:'PUT',headers:putHeaders,body:JSON.stringify({acf})});
+    const putHeaders={'Content-Type':'application/json','Authorization':auth};
+    const res2=await fetch(WP+'/wp-json/wp/v2/recettes/'+data.id,{method:'PUT',headers:putHeaders,body:JSON.stringify({acf})});
     const data2=await res2.json();
     const url=`${WP}/wp-admin/post.php?post=${data.id}&action=edit`;
     if(res2.ok){
